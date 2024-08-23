@@ -297,11 +297,17 @@ class AccountMove(models.Model):
                 if factura.journal_id.name == 'FACT FELPLEX/I3':
                     usuario_proxy = 'i3@i3.gt'
                     clave_proxy = 'i3@2023'
-                    nit_emisor = 'DEMO'
+                    nit_emisor = 'DEMO'                    
+                    es_pruebas_fel = 1
+                
                 else:
                     usuario_proxy = factura.company_id.usuario_proxy
                     clave_proxy = factura.company_id.clave_proxy
                     nit_emisor = factura.company_id.vat
+                    if factura.company_id.es_pruebas_fel == True:
+                        es_pruebas_fel = 1
+                    else:
+                        es_pruebas_fel = 0
                     
                 user_id = self.invoice_user_id.name
                 cid = self.env.company.name
