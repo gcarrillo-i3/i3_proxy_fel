@@ -41,30 +41,10 @@ class AccountMove(models.Model):
     
     
     motivo_fel = fields.Char(string='Motivo FEL')
-    # motivo_fel_anulacion = fields.Selection([('a', 'Cambio de Fecha'), ('b', 'Cambio de Descripción'), ('c', 'Cambio de Razón Social'), ('d', 'Cambio de Valor'), ('e', 'Cliente rechaza el producto')], 'Anulación DTE', copy=False)
+
     
     nota_debito = fields.Boolean(string="Nota de debito")
     comercial_id = fields.Many2one(string="Comercial", related='partner_id.user_id', readonly=True, store=True)
-
-    
-    # def colocar_analitica_ac(self):
-
-    #     for line in self.invoice_line_ids:
-    #         logging.warning(line.move_id)
-    #         logging.warning(line.product_id.product_brand_id)
-            
-    #         if not line.product_id.product_brand_id:
-    #             continue
-    #         elif line.product_id.product_brand_id == 'ARQUITECTURA':
-    #             line.analytic_distribution = {"1":100}
-    #         elif line.product_id.product_brand_id== 'STC':
-    #             line.analytic_distribution = {"4":100}
-    #         elif line.product_id.product_brand_id == 'MOVILIDAD':
-    #             line.analytic_distribution = {"5":100}
-    #         else:
-    #             line.analytic_distribution = {"2":100}
-    #             logging.warning({"2":100})
-    
 
    
     def construir_correlativo_interno(self):
@@ -357,10 +337,7 @@ class AccountMove(models.Model):
                     correo_receptor = factura.partner_id.email
                 else:
                     correo_receptor = ""
-                if factura.company_id.es_pruebas_fel == True:
-                    es_pruebas_fel = 1
-                else:
-                    es_pruebas_fel = 0
+                
                 
                 
                 # datos del receptor
