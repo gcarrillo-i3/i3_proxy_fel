@@ -116,8 +116,8 @@
 
 				</xpath>
 			</field>
-			 -->
-		</record>
+			 
+		</record>-->
 			<record id="account_invoice_filter_extra_fel_1" model="ir.ui.view">
 			<field name="name">account.invoice.filter.extra.fel.1</field>
 			<field name="model">account.move</field>
