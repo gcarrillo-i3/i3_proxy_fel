@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 	<data>
+
+
+
+
 	 <record id="view_journal_fel_extra_5" model="ir.ui.view">
 			<field name="name">view.journal.fel.extra.5</field>
 			<field name="model">account.journal</field>
 			<field name="inherit_id" ref="account.view_account_journal_form"/>
 			<field name="arch" type="xml">
 				<data>
+
 					<xpath expr="//form/sheet/notebook/page[@name='bank_account']" position="after">
+
 						<page name="fel" string="FEL">
 							<group name="extra" string="FEL">
 								<group>
@@ -27,4 +33,5 @@
 		</record> 
 
 	</data>
+
 </odoo>
