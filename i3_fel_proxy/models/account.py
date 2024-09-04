@@ -261,11 +261,11 @@ class AccountMove(models.Model):
                 error = error[0]
                 print(error)
                 
-            self.message_post(body='<p>No se publicó la factura por error del certificador FEL:</p> <p><strong>'+mensaje+'</strong></p>'+'<strong>'+error+'</strong>')
+            self.message_post(body='No se publicó la factura por error del certificador FEL:'+mensaje+' '+error)
 
         else:
             self.message_post(
-                body='<p>No se publicó la factura por error del certificador FEL:</p> <p><strong>' +mensaje + '</strong></p>')
+                body='No se publicó la factura por error del certificador FEL: ' + mensaje )
     
                     
     def solicitud_dte(self):
@@ -687,7 +687,7 @@ class AccountMove(models.Model):
                             if xml_base64:
                                 self.captura_xml_proxy(xml_base64, numeroDeAutorizacion)
                            
-                            factura.message_post(body='REPUESTA DEL CERTIFICADOR:<p><strong>'+mensaje+'</strong></p>')
+                            factura.message_post(body='REPUESTA DEL CERTIFICADOR: '+ mensaje)
 
                         
                         elif int(exito) == 0:
@@ -762,7 +762,7 @@ class AccountMove(models.Model):
                     
                     mensaje = response_json["mensaje"]
                     self.state = "cancel"
-                    factura.message_post(body='REPUESTA DEL CERTIFICADOR:</p> <p><strong>'+mensaje+'</strong></p>')
+                    factura.message_post(body='REPUESTA DEL CERTIFICADOR: '+ mensaje)
                 
                 if pdf_base64:
                     corr_amigable = ''

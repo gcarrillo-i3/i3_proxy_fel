@@ -8,42 +8,41 @@
 			<field name="arch" type="xml">
 
 
-
 				<xpath expr="//group[@id='header_left_group']" position="inside">
-					<separator colspan="2" string="DATOS FACTURACIÓN FEL"  />
+					<separator colspan="2" string="DATOS FACTURACIÓN FEL"   invisible="state == 'draft'"/>
 					<field name="serie_fel" 
-							invisible="move_type == 'in_invoice' or state != 'posted'"
+							invisible="move_type == 'in_invoice' or state == 'draft'"
 							readonly="state == 'posted'"						
 						/>
-						<!-- attrs="{'invisible': ['|',('move_type', '=', 'in_invoice'),('state', '!=', 'posted')], 'readonly':[('state', '=', 'posted')]}"  -->
+						<!-- attrs="{'invisible': ['|',('move_type', '=', 'in_invoice'),('state', '=', 'posted')], 'readonly':[('state', '=', 'posted')]}"  -->
 					<field name="numero_dte_sat"
-							invisible="move_type == 'in_invoice' or state != 'posted'"
+							invisible="move_type == 'in_invoice' or state == 'draft'"
 							readonly="state == 'posted'"						
 							 />
 					<field name="numero_dte_uuid" 
-							invisible="move_type == 'in_invoice' or state != 'posted'"
+							invisible="move_type == 'in_invoice' or state == 'draft'"
 							readonly="state == 'posted'"						
 					/>					
 				</xpath>
 				
 
-				<xpath expr="//group[@id='header_right_group']/div[@name='journal_div']" position="after">
-					<!-- <field name="son_servicios" 
+				<!--<xpath expr="//group[@id='header_right_group']/div[@name='journal_div']" position="after">
+					 <field name="son_servicios" 
 							widget="boolean_toggle" 
 							invisible="move_type == 'in_invoice' or state != 'posted'"
 							readonly="state == 'posted'"		
-							/> -->
-					<!-- <field name="correlativo_fact_empresa" 
+							/> 
+					 <field name="correlativo_fact_empresa" 
 							invisible="move_type == 'in_invoice' or correlativo_fact_empresa != 'posted' or state != 'posted'"
-							readonly="state == 'posted'"	/>				 -->
-				</xpath>
+							readonly="state == 'posted'"	/>				
+				</xpath>-->
 
 				<xpath expr="//page[@name='other_info']/group/group/field[@name='ref']" position="after">
 					<field name="enlace_fel_pdf" 
-							invisible="move_type == 'in_invoice'  or state != 'posted'"
+							invisible="move_type == 'in_invoice'  or state == 'draft'"
 							readonly="state == 'posted'"	/>
 					<field name="enlace_fel_xml"
-							invisible="move_type == 'in_invoice' or state != 'posted'"
+							invisible="move_type == 'in_invoice' or state == 'draft'"
 							readonly="state == 'posted'"/>
 				</xpath>
 
