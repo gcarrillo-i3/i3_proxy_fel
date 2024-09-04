@@ -2,7 +2,7 @@
 
 {
     'name': 'i3_proxy',
-    'version': '16.0.0.0.0',
+    'version': '17.0.0.0.0',
     'category': 'Invoicing',
     'summary': 'Módulo Certificar en Guatemala-SAT',
     'description': """ 
@@ -39,7 +39,6 @@ Este módulo es una herramienta esencial para cualquier empresa en Guatemala que
         'data/cargar_incoterms.xml',
         'data/cargar_diario.xml',
         'views/account_move_view.xml', 
-        # 'views/pre_account.xml',
         'views/journal_view.xml',
     ],
     'demo': [],
