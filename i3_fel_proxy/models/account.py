@@ -705,13 +705,10 @@ class AccountMove(models.Model):
                         
     def anular_dte(self):
         url_anular ="https://proxy-fel.i3.gt/api/anular"
-        logging.warning(self.journal_id.generar_fel)
+        
         if self.journal_id.generar_fel == True:
             
-            
             for factura in self:                            
-                
-                
                 if factura.journal_id.name == 'FACT FELPLEX/I3':
                     usuario_proxy = 'i3@i3.gt'
                     clave_proxy = 'i3@2023'
@@ -752,53 +749,63 @@ class AccountMove(models.Model):
                     }
 
                 response = requests.request("POST", url_anular, headers=headers, data=jdata2)
-                print(response.text)
+                # print(response.text)
                 response_json = json.loads(response.text)
                 mensaje = response_json["mensaje"]
-                pdf_base64 = response_json["datos"]["pdf_base64"] or False
+                exito = response_json["exito"]   
                 
-                if response.status_code == 200 and response_json["exito"] == True:
-                    print("Estamos en la respuesta anular")
-                    
-                    mensaje = response_json["mensaje"]
-                    self.state = "cancel"
-                    factura.message_post(body='REPUESTA DEL CERTIFICADOR: '+ mensaje)
                 
-                if pdf_base64:
-                    corr_amigable = ''
-                    
-                    corr = self.correlativo_fact_empresa
-                    cliente = self.partner_id.name
-                    cliente_may = cliente.upper()
-                    if corr:
-                        corr_amigable = corr
-                    else:
-                        corr_amigable = self.numero_dte_uuid
+                if response.status_code == 200:
+                    if int(exito) == 1:
+                                                                        
+                        pdf_base64 = response_json.get("datos", {}).get("pdf_base64")
+
+                        factura.state = "cancel"
+                        factura.message_post(body='REPUESTA DEL CERTIFICADOR: '+mensaje)
                         
-                        
-                    logging.warning(corr_amigable)
-                    nombre_pdf = f"FACTURA-{corr_amigable}-{cliente_may}-ANULADA.pdf"
-                    logging.warning(nombre_pdf)
-                    
-                    if pdf_base64:
-                        try:
-                                    
-                            #Guardar el archivo PDF en el directorio temporal
+                        if pdf_base64:
+                            corr_amigable = ''
+                            
+                            corr = self.correlativo_fact_empresa
+                            cliente = self.partner_id.name
+                            cliente_may = cliente.upper()
+                            
+                            if corr:
+                                corr_amigable = corr
+                            else:
+                                corr_amigable = self.numero_dte_uuid
+                                
+                                
+                            logging.warning(corr_amigable)
+                            nombre_pdf = f"FACTURA-{corr_amigable}-{cliente_may}-ANULADA.pdf"
+                            logging.warning(nombre_pdf)
+                            
+                            
+                                            
+                            #Guardar el archivo PDF en el directorio 
                             pdf_binary = base64.b64decode(pdf_base64)
                             attachment_vals = {
                                     'name': nombre_pdf,  # Nombre del archivo adjunto
-                                        'datas': pdf_base64,     # Contenido del archivo adjunto
-                                        'type': 'binary',
-                                        'store_fname': nombre_pdf,
-                                        'res_model':  self._name,
-                                        'res_id': self.id,
-                                        'mimetype': 'application/pdf'
+                                    'datas': pdf_base64,     # Contenido del archivo adjunto
+                                    'type': 'binary',
+                                    'store_fname': nombre_pdf,
+                                    'res_model':  self._name,
+                                    'res_id': self.id,
+                                    'mimetype': 'application/pdf'
                                     }
                             attachment = self.env['ir.attachment'].create(attachment_vals)
-                        except Exception as e:
-                                    logging.exception("Error al guardar el archivo PDF: %s", e)
-                    else:
-                        logging.warning("No se recibió ningún PDF en base64 en la respuesta.")
+                                
+                    elif int(exito) == 0:
+                            logging.warning("en el segudno IF")
+                            factura.state = "draft"
+                            longitud_datos = len(response_json["datos"])
+                            self.manejar_errores( mensaje, response_json, longitud_datos)
+                            
+                else:
+                    logging.warning("en el tercer IF")
+                    factura.state = "draft"
+                    longitud_datos = len(response_json["datos"])
+                    self.manejar_errores( mensaje, response_json, longitud_datos)    
                 
                 
 
