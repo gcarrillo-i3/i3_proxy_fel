@@ -2,7 +2,7 @@
 
 {
     'name': 'i3_proxy',
-    'version': '16.0.0.0.0',
+    'version': '16.0.0.0.1',
     'category': 'Invoicing',
     'summary': 'Módulo Certificar en Guatemala-SAT',
     'description': """ 
