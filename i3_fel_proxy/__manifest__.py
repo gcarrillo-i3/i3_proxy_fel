@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 {
-    'name': 'i3_proxy',
+    'name': 'i3 FEL Guatemala',
     'version': '16.0.0.0.2',
     'category': 'Invoicing',
     'summary': 'Módulo Certificar en Guatemala-SAT',
