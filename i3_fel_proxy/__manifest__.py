@@ -17,7 +17,7 @@ Este módulo está diseñado para facilitar la certificación ante la **Superint
 
                     """,
     'author': 'Integración Inteligente de Información S.A.',
-    'website': 'https://portal.i3.gt/',
+    'website': 'https://i3.gt/fel',
     'support': 'info@i3.gt',
     'maintainer': 'I3',
     'license': 'OPL-1',
