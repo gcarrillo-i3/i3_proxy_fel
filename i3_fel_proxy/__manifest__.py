@@ -2,7 +2,7 @@
 
 {
     'name': 'i3 FEL Guatemala',
-    'version': '17.0.0.0.2',
+    'version': '17.0.0.2.2',
     'category': 'Invoicing',
     'summary': 'Módulo Certificar en Guatemala-SAT',
     'description': """ 
