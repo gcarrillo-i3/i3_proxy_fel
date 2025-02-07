@@ -172,12 +172,8 @@ class AccountMove(models.Model):
         'Accept': 'application/json',
         'Content-Type': 'application/json',
         'Authorization': f"Bearer {mi_token_es}"
-        }
-        
-        response = requests.request("POST", url_solicitud, headers=headers, data=jdata2)
-
-        
-        logging.warning(response.text)
+        }        
+        response = requests.request("POST", url_solicitud, headers=headers, data=jdata2)        
         return response
     
     def manejar_errores(self, mensaje, res_json, longitud_datos):        
@@ -298,7 +294,9 @@ class AccountMove(models.Model):
                 #valores fijos
                 isr_proveedor_05 = 0.05
                 isr_proveedor_07 = 0.07
-                
+                total_monto_factura = 0
+                total_impuestos_factura = 0
+                total_factura = 0
                 #rentenciones                
                 total_retencion_lineas  = 0
                 total_menos_retenciones = 0                
@@ -478,7 +476,8 @@ class AccountMove(models.Model):
                     # respuesta del endpoit 
                     status_code = res_proxy.status_code
                     mensaje = res_json["mensaje"]
-                    exito = res_json["exito"]                                        
+                    exito = res_json["exito"]
+                    longitud_datos = len(res_json["datos"])                                        
                     #manejando errores atipicos                        
                     if mensaje == 'Unauthenticated.':
                         raise UserError('Ups... parece que no Odoo no está conectado al a FEL GT, contacta a tu Implemantador de I3')                                                         
@@ -512,105 +511,101 @@ class AccountMove(models.Model):
                             factura.message_post(body='REPUESTA DEL CERTIFICADOR:<p><strong>'+mensaje+'</strong></p>')
                         
                         elif int(exito) == 0:                            
-                            self.state = "draft"
-                            longitud_datos = len(res_json["datos"])
+                            self.state = "draft"                            
                             self.manejar_errores( mensaje, res_json, longitud_datos)
                             
                     else:
                         self.state = "draft"
-                        longitud_datos = len(res_json["datos"])
                         self.manejar_errores( mensaje, res_json, longitud_datos)
                         
                         
     def anular_dte(self):
         url_anular ="https://proxy-fel.i3.gt/api/anular"        
         if self.journal_id.generar_fel == True:                        
-            for factura in self:                                                            
-                if factura.journal_id.name == 'FACT FELPLEX/I3':
-                    usuario_proxy = 'i3@i3.gt'
-                    clave_proxy = 'i3@2023'
-                    nit_emisor = 'DEMO'
-                else:
-                    usuario_proxy = factura.company_id.usuario_proxy
-                    clave_proxy = factura.company_id.clave_proxy
-                    nit_emisor = factura.company_id.vat
-            #obtiene las credeciales para hacer peticiones al proxy
-            
-                user_id = self.invoice_user_id.name
-                token_proxy = factura.company_id.token_firma_fel
-                cid = self.env.company.name
-                usuario_app = f"{cid}/{user_id}"
+            for factura in self:
+                if factura.numero_dte_uuid:                                                            
+                    if factura.journal_id.name == 'FACT FELPLEX/I3':
+                        usuario_proxy = 'i3@i3.gt'
+                        clave_proxy = 'i3@2023'
+                        nit_emisor = 'DEMO'
+                    else:
+                        usuario_proxy = factura.company_id.usuario_proxy
+                        clave_proxy = factura.company_id.clave_proxy
+                        nit_emisor = factura.company_id.vat
+                #obtiene las credeciales para hacer peticiones al proxy
                 
-                if factura.company_id.token_por_factura == True:
-                    mi_token_es = self.obtener_token(usuario_proxy,clave_proxy)    
-                else:
-                    mi_token_es = self.obtener_token_periodico(usuario_proxy,clave_proxy)
-
-                
-                if factura.motivo_fel == None or factura.motivo_fel == False:
-                    raise ValidationError(" Para Anular la Factura : " + factura.numero_dte_uuid + " Hay que agregar el motivo en el campo Motivo Fel ubicado en la pestaña Otra Informacion)")
-                dict_fact_anular = {
-
-                    "motivo_anulacion":factura.motivo_fel,                
-                    "uuid": factura.numero_dte_uuid,
-                    "usuario_app":usuario_app,
+                    user_id = self.invoice_user_id.name
+                    cid = self.env.company.name
+                    usuario_app = f"{cid}/{user_id}"
                     
-                }
-                #logging.warning(type(dict_fact_anular))
-                jdata2 = json.dumps(dict_fact_anular)
-                #logging.warning(type(jdata2))
-                headers = {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'Authorization': f'Bearer {mi_token_es}'
+                    if factura.company_id.token_por_factura == True:
+                        mi_token_es = self.obtener_token(usuario_proxy,clave_proxy)    
+                    else:
+                        mi_token_es = self.obtener_token_periodico(usuario_proxy,clave_proxy)
+
+                    
+                    if factura.motivo_fel == None or factura.motivo_fel == False:
+                        raise ValidationError(" Para Anular la Factura : " + factura.numero_dte_uuid + " Hay que agregar el motivo en el campo Motivo Fel ubicado en la pestaña Otra Informacion)")
+                    dict_fact_anular = {
+                        "motivo_anulacion":factura.motivo_fel,                
+                        "uuid": factura.numero_dte_uuid,
+                        "usuario_app":usuario_app,                        
                     }
-
-                response = requests.request("POST", url_anular, headers=headers, data=jdata2)
-                response_json = json.loads(response.text)
-                mensaje = response_json["mensaje"]
-                pdf_base64 = response_json["datos"]["pdf_base64"] or False
-                
-                if response.status_code == 200 and response_json["exito"] == True:
-                    print("Estamos en la respuesta anular")                    
-                    mensaje = response_json["mensaje"]
-                    self.state = "cancel"
-                    factura.message_post(body='REPUESTA DEL CERTIFICADOR:</p> <p><strong>'+mensaje+'</strong></p>')
-                
-                if pdf_base64:
-                    corr_amigable = ''                    
-                    corr = self.correlativo_fact_empresa
-                    cliente = self.partner_id.name
-                    cliente_may = cliente.upper()
-                    if corr:
-                        corr_amigable = corr
-                    else:
-                        corr_amigable = self.numero_dte_uuid
-                        
-                        
-                    logging.warning(corr_amigable)
-                    nombre_pdf = f"FACTURA-{corr_amigable}-{cliente_may}-ANULADA.pdf"
-                    logging.warning(nombre_pdf)
+                    jdata2 = json.dumps(dict_fact_anular)
                     
-                    if pdf_base64:
-                        try:
+                    headers = {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'Authorization': f'Bearer {mi_token_es}'
+                        }
+
+                    response = requests.request("POST", url_anular, headers=headers, data=jdata2)
+                    response_json = json.loads(response.text)                
+                    longitud_datos = len(response_json["datos"])
+                    exito = response_json["exito"] or  0
+                    mensaje = response_json["mensaje"]
+                    if response.status_code == 200: 
+                        if int(exito) == 1:   
+                            pdf_base64 = response_json["datos"]["pdf_base64"] or False                                        
+                            mensaje = response_json["mensaje"]                            
+                            factura.message_post(body=f'REPUESTA DEL CERTIFICADOR: {mensaje}')                
+                            if pdf_base64:
+                                corr_amigable = ''                    
+                                corr = self.correlativo_fact_empresa
+                                cliente = self.partner_id.name
+                                cliente_may = cliente.upper()
+                                if corr:
+                                    corr_amigable = corr
+                                else:
+                                    corr_amigable = self.numero_dte_uuid
                                     
-                            #Guardar el archivo PDF en el directorio temporal
-                            pdf_binary = base64.b64decode(pdf_base64)
-                            attachment_vals = {
-                                    'name': nombre_pdf,  # Nombre del archivo adjunto
-                                        'datas': pdf_base64,     # Contenido del archivo adjunto
-                                        'type': 'binary',
-                                        'store_fname': nombre_pdf,
-                                        'res_model':  self._name,
-                                        'res_id': self.id,
-                                        'mimetype': 'application/pdf'
-                                    }
-                            attachment = self.env['ir.attachment'].create(attachment_vals)
-                        except Exception as e:
-                                    logging.exception("Error al guardar el archivo PDF: %s", e)
+                                    
+                                logging.warning(corr_amigable)
+                                nombre_pdf = f"FACTURA-{corr_amigable}-{cliente_may}-ANULADA.pdf"
+                                logging.warning(nombre_pdf)
+                                
+                                self.state = "cancel"
+                                                
+                                #Guardar el archivo PDF en el directorio temporal
+                                pdf_binary = base64.b64decode(pdf_base64)
+                                attachment_vals = {
+                                        'name': nombre_pdf,  # Nombre del archivo adjunto
+                                            'datas': pdf_base64,     # Contenido del archivo adjunto
+                                            'type': 'binary',
+                                            'store_fname': nombre_pdf,
+                                            'res_model':  self._name,
+                                            'res_id': self.id,
+                                            'mimetype': 'application/pdf'
+                                        }
+                                attachment = self.env['ir.attachment'].create(attachment_vals)
+                            
+                        else:                            
+                            self.state = "post"                            
+                            self.manejar_errores(mensaje, response_json, longitud_datos)
+                            
                     else:
-                        logging.warning("No se recibió ningún PDF en base64 en la respuesta.")
-                
-                
+                        self.state = "post"
+                        self.manejar_errores(mensaje, response_json, longitud_datos)
+                    
 
                 
