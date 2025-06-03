@@ -1,7 +1,8 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
-models/ss.json
 .DS_Store
 .vscode
+*.zip
+*.deb
+*.json
 ../.DS_Store
- 

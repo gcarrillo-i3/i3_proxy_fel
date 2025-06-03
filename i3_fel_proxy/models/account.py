@@ -344,11 +344,11 @@ class AccountMove(models.Model):
                 
                 nit_receptor = factura.partner_id.vat
                 
-                direccion_receptor = factura.partner_id.street 
-                codigo_postal_receptor = factura.partner_id.zip
-                municipio_receptor = factura.partner_id.city 
-                departamento_receptor = factura.partner_id.state_id.name 
-                pais_receptor = factura.partner_id.country_id.code
+                direccion_receptor = factura.partner_id.street or "Ciudad de Guatemala"
+                codigo_postal_receptor = factura.partner_id.zip or "01001"
+                municipio_receptor = factura.partner_id.city or "Guatemala"
+                departamento_receptor = factura.partner_id.state_id.name or "Guatemala"
+                pais_receptor = factura.partner_id.country_id.code or "GT"
                 
                 #obtiene las credeciales para hacer peticiones al proxy
                 tipo_dte = factura.journal_id.tipo_dte
@@ -356,14 +356,14 @@ class AccountMove(models.Model):
                 codigo_establecimiento = factura.journal_id.codigo_establecimiento
                 es_corr_interno = factura.journal_id.generar_corr_interno
                 
-                incoterm = factura.invoice_incoterm_id.code
+                incoterm = factura.invoice_incoterm_id.code or ""
                 correlativo = factura.correlativo_fact_empresa
                 nombre_factura = factura.name 
                 
                 moneda_emisor = factura.currency_id.name
                 nombre_receptor = factura.partner_id.name
-                ncre_uuid_origen = factura.reversed_entry_id.numero_dte_uuid
-                ncre_motivo = factura.motivo_fel
+                ncre_uuid_origen = factura.reversed_entry_id.numero_dte_uuid or ""
+                ncre_motivo = factura.motivo_fel or ""
                 monto_abono = ''
                 
                 #miramos los error en el body del cliente????? 
@@ -545,6 +545,8 @@ class AccountMove(models.Model):
                     
                     
                     if lineas.product_uom_id:
+                        unidad_medida = "UND"
+                    else:
                         unidad_medida = "UND"
 
                     detalle_lineas = {
